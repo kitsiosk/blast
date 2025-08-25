@@ -1,0 +1,50 @@
+FROM --platform=linux/amd64 ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/Zurich
+WORKDIR /app
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    tzdata \
+    git \
+    build-essential \
+    cmake \
+    libopenblas-dev \
+    libomp-dev \
+    curl \
+    && add-apt-repository ppa:deadsnakes/ppa -y \
+    && apt-get update && apt-get install -y \
+    python3.12 \
+    python3.12-dev \
+    python3.12-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3.12 -m ensurepip --upgrade
+RUN python3.12 -m pip install --upgrade pip
+
+# Set Python 3.12 as default
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+
+
+# This is mandadotry to avoid caching the "git clone" command
+ARG commit_hash
+RUN echo "Cloning commit: ${commit_hash}" 
+
+# Clone the repository
+RUN git clone https://github.com/mozilla/bugbot.git /app/testbed
+
+# Set working directory to the cloned repo
+WORKDIR /app/testbed
+
+# Checkout to the specific commit
+RUN git checkout ${commit_hash}
+
+# Build 
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements-test.txt
+RUN pip install --no-cache-dir -r requirements-dev.txt
+RUN pip install pytest
+
+# Set the default command
+CMD ["python3", "-c", "print('environment is ready')"]
+

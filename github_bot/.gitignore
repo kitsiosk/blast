@@ -1,0 +1,9 @@
+venv/
+.venv/
+__pycache__/
+github_bot/__pycache__/
+webhook_handler/__pycache__/
+.ipynb_checkpoints
+*.pyc
+Dockerfile.temp
+mylog.log

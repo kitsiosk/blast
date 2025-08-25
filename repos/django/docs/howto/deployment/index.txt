@@ -1,0 +1,24 @@
+================
+Deploying Django
+================
+
+Django is full of shortcuts to make Web developers' lives easier, but all
+those tools are of no use if you can't easily deploy your sites. Since Django's
+inception, ease of deployment has been a major goal.
+
+This section contains guides to the two main ways to deploy Django. WSGI is the
+main Python standard for communicating between Web servers and applications,
+but it only supports synchronous code.
+
+ASGI is the new, asynchronous-friendly standard that will allow your Django
+site to use asynchronous Python features, and asynchronous Django features as
+they are developed.
+
+.. toctree::
+   :maxdepth: 2
+
+   wsgi/index
+   asgi/index
+   ../static-files/deployment
+   ../error-reporting
+   checklist

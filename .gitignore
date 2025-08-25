@@ -1,0 +1,12 @@
+logs
+log
+tddbench.egg-info
+*__pycache__/
+.DS_Store
+tddbench.egg-info
+.venv
+.env
+logs_pynguin*/
+.ipynb_checkpoints
+preds_*.json*
+tddbench_verified_processed.pickle

@@ -1,0 +1,75 @@
+FROM --platform=linux/amd64 ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/Zurich
+WORKDIR /app
+
+# Install system dependencies and add deadsnakes PPA
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    tzdata \
+    git \
+    build-essential \
+    cmake \
+    libopenblas-dev \
+    libomp-dev \
+    curl \
+    && add-apt-repository ppa:deadsnakes/ppa -y \
+    && apt-get update && apt-get install -y \
+    python3.10 \
+    python3.10-dev \
+    python3.10-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ensure pip is available for Python 3.10
+RUN apt-get update && apt-get install -y \
+    python3.10-distutils \
+    python3-pip \
+    && python3.10 -m pip install --upgrade pip
+
+
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 
+
+
+# This is mandadotry to avoid caching the "git clone" command
+ARG commit_hash
+RUN echo "Cloning commit: ${commit_hash}" 
+
+RUN git clone https://github.com/mozilla/bugbug.git /app/testbed
+
+# Set working directory
+WORKDIR /app/testbed
+
+# Checkout the specific commit
+RUN git checkout ${commit_hash}
+
+# This is needed for http_service/requirements.txt to work - it will be re-installed through pip
+RUN apt-get remove -y python3-blinker
+
+# For Pynguin:
+RUN apt-get install -y python3-tk
+RUN apt-get install -y python3-gdbm
+# To apply the patch below
+RUN apt-get install -y patch
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt 
+RUN pip install --no-cache-dir -r test-requirements.txt 
+RUN pip install --no-cache-dir -r extra-nn-requirements.txt 
+RUN pip install --no-cache-dir -r extra-nlp-requirements.txt 
+RUN pip install --no-cache-dir -r http_service/requirements.txt
+RUN pip install --no-cache-dir -r infra/spawn_pipeline_requirements.txt 
+RUN pip install --no-cache-dir -r functions/sync-review-comments-db/requirements.txt
+RUN pip install pynguin==0.40
+RUN pip install astor
+
+# patch pynguin according to https://github.com/se2p/pynguin/issues/81#issuecomment-2522619386
+COPY pynguin_patch.diff /tmp/
+RUN patch /usr/local/lib/python3.10/dist-packages/pynguin/analyses/module.py < /tmp/pynguin_patch.diff
+
+
+# Build
+RUN pip install -e .
+
+# Set the default command
+CMD ["python3", "-c", "print('environment is ready')"]

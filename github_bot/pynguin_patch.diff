@@ -1,0 +1,12 @@
+diff --git a/usr/local/lib/python3.10/dist-packages/pynguin/analyses/module.py b/usr/local/lib/python3.10/dist-packages/pynguin/analyses/module.py
+--- a/usr/local/lib/python3.10/dist-packages/pynguin/analyses/module.py
++++ b/usr/local/lib/python3.10/dist-packages/pynguin/analyses/module.py
+@@ -1447,6 +1447,8 @@ def __analyse_included_functions(
+         if current in seen_functions:
+             continue
+         seen_functions.add(current)
++        if current.__module__ is None or type(current.__module__) == type(None):
++            continue
+         __analyse_function(
+             func_name=current.__qualname__,
+             func=current,

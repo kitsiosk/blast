@@ -1,0 +1,3 @@
+The two baselines come from the TDD-Bench-Verified paper [1]. We thank the authors for replying to our inquiries about implementation details which helped us re-implement AutoTDD (`autotdd.ipynb`) and ZeroShot (`zeroshot.ipynb`), since their implementation not yet available.
+
+[1]: Ahmed, T., Hirzel, M., Pan, R., Shinnar, A., & Sinha, S. (2024). TDD-Bench Verified: Can LLMs Generate Tests for Issues Before They Get Resolved?. arXiv preprint arXiv:2412.02883.

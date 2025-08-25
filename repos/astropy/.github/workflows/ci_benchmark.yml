@@ -1,0 +1,101 @@
+### Inspired from https://github.com/scikit-image/scikit-image/blob/main/.github/workflows/benchmarks.yml
+
+name: Benchmark
+
+on:
+  pull_request:
+    types: [labeled, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    if: (github.repository == 'astropy/astropy' && contains(github.event.pull_request.labels.*.name, 'benchmark'))
+    name: "Compare asv with astropy main"
+    runs-on: ubuntu-latest
+    env:
+      CCACHE_BASEDIR: "${{ github.workspace }}"
+      CCACHE_DIR: "${{ github.workspace }}/.ccache"
+      CCACHE_COMPRESS: true
+      CCACHE_COMPRESSLEVEL: 6
+      CCACHE_MAXSIZE: 400M
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38  # v5.4.0
+        name: Install Python
+        with:
+          python-version: "3.11"
+
+      - name: Setup some dependencies
+        shell: bash -l {0}
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y ccache
+          # Make gcc/gxx symlinks first in path
+          sudo /usr/sbin/update-ccache-symlinks
+          echo "/usr/lib/ccache" >> $GITHUB_PATH
+
+      - name: "Prepare ccache"
+        id: prepare-ccache
+        shell: bash -l {0}
+        run: |
+          echo "key=benchmark-$RUNNER_OS" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+          ccache -p
+          ccache -z
+
+      - name: "Restore ccache"
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57  # v4.2.0
+        with:
+          path: .ccache
+          key: ccache-${{ secrets.CACHE_VERSION }}-${{ steps.prepare-ccache.outputs.key }}-${{ steps.prepare-ccache.outputs.timestamp }}
+          restore-keys: |
+            ccache-${{ secrets.CACHE_VERSION }}-${{ steps.prepare-ccache.outputs.key }}-
+
+      - name: Run benchmarks
+        shell: bash -l {0}
+        id: benchmark
+        env:
+          OPENBLAS_NUM_THREADS: 1
+          MKL_NUM_THREADS: 1
+          OMP_NUM_THREADS: 1
+          ASV_FACTOR: 1.3
+          ASV_SKIP_SLOW: 1
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_LABEL: ${{ github.event.pull_request.base.label }}
+        run: |
+          set -x
+          python -m pip install asv virtualenv packaging
+
+          git clone -b main https://github.com/astropy/astropy-benchmarks.git --single-branch
+
+          # ID this runner
+          python -m asv machine --yes --conf asv.ci.conf.json
+
+          echo "Baseline:  ${BASE_SHA} (${BASE_LABEL})"
+          echo "Contender: ${GITHUB_SHA} (${BASE_LABEL})"
+
+          # Run benchmarks for current commit against base
+          ASV_OPTIONS="--split --show-stderr --factor $ASV_FACTOR --conf asv.ci.conf.json"
+          python -m asv continuous $ASV_OPTIONS ${BASE_SHA} ${GITHUB_SHA}
+
+      - name: "Check ccache performance"
+        shell: bash -l {0}
+        run: ccache -s
+        if: always()
+
+      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0
+        if: always()
+        with:
+          name: asv-benchmark-results
+          path: |
+            results/
