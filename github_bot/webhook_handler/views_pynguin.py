@@ -29,7 +29,7 @@ else:
     WEBHOOK_RAW_LOG_DIR = "/Users/konstantinos/local-desktop/Test Generation Project/github_bot_logs_paper/" # for raw requests
     WEBHOOK_LOG_DIR     = "/Users/konstantinos/local-desktop/Test Generation Project/github_bot_logs_paper/" # for parsed requests
 
-GITHUB_TOKEN = os.environ["GITHUB_PAT"]
+GITHUB_TOKEN = get_api_key("GITHUB_PAT")
 
 # GitHub webhook secret. Must be the same when setting up the hook in GH.
 GITHUB_WEBHOOK_SECRET = "1234" # placeholder, change if needed

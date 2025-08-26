@@ -10,8 +10,24 @@ from io import BytesIO
 import ast
 import difflib
 from groq import Groq
+import json
 
-openai.api_key = os.environ["OPENAI_API_KEY"]
+def get_api_key(key_name, config_file="keys.json"):
+    # Try environment variable first
+    key = os.environ.get(key_name)
+    if key:
+        return key
+
+    # Fallback: try JSON config
+    if os.path.isfile(config_file):
+        with open(config_file) as f:
+            config = json.load(f)
+        return config.get(key_name)
+
+OPENAI_API_KEY = get_api_key("OPENAI_API_KEY")
+openai.api_key = OPENAI_API_KEY
+
+
 
 def extract_edited_files(diff_content):
     """
@@ -190,7 +206,7 @@ def query_model(prompt, model="gpt-4o", T=0.0):
         )
         return response.choices[0].message.content.strip()
     elif model.startswith("llama"):
-        GROQ_API_KEY = os.environ["GROQ_API_KEY"]
+        GROQ_API_KEY = get_api_key("GROQ_API_KEY")
         client = Groq(api_key=GROQ_API_KEY)
         messages = [{"role": "user", "content": prompt}]
         completion = client.chat.completions.create(
@@ -202,7 +218,7 @@ def query_model(prompt, model="gpt-4o", T=0.0):
 
         return completion.choices[0].message.content
     elif model.startswith("qwen") or model.startswith("deepseek"):
-        GROQ_API_KEY = os.environ["GROQ_API_KEY"]
+        GROQ_API_KEY = get_api_key("GROQ_API_KEY")
         client = Groq(api_key=GROQ_API_KEY)
         response = client.chat.completions.create(
             model=model,

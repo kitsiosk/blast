@@ -23,7 +23,7 @@ accepted to ASE '25.
 
 
 ## Setup
-This repository is tested and recommended on macOS (15.6 or newer) and Python 3.12. Docker is required (ensure the daemon is running).
+This repository is tested and recommended on macOS (15.6 or newer) and Python 3.12. Docker is required because the tests are ran in an isolated Docker environment, so ensure the daemon is running before proceeding.
 
 Create a Python 3.12 virtual environment and install the required packages:
 ```sh
@@ -39,6 +39,7 @@ export OPENAI_API_KEY="sk-XXXX"   # required
 export GROQ_API_KEY="gsk-YYYY"    # optional (for ablation studies with LLaMA/DeepSeek)
 ```
 
+A less secure but more convenient alternative is to save the keys in `keys.json`. Currently, the code will first search in the environment variables and if the key is not found there, it will search in `keys.json`.
 
 ## Running BLAST
 BLAST is implemented end-to-end in the script `./run_blast.sh`, which also contains information about the available CLI options. Make the script executable by running:
