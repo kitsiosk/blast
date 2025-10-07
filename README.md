@@ -25,6 +25,12 @@ accepted to ASE '25.
 ## Setup
 This repository is tested and recommended on Ubuntu 22.04 and macOS (15.6 or newer) with Python 3.12. Docker is required because the tests are ran in an isolated Docker environment, so ensure the daemon is running before proceeding.
 
+Start by installing the following:
+```sh
+sudo apt update
+sudo apt install -y python3.12-dev build-essential git pkg-config
+```
+
 Create a Python 3.12 virtual environment and install the required packages:
 ```sh
 python3.12 -m venv .venv
