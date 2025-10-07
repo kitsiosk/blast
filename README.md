@@ -23,7 +23,7 @@ accepted to ASE '25.
 
 
 ## Setup
-This repository is tested and recommended on macOS (15.6 or newer) and Python 3.12. Docker is required because the tests are ran in an isolated Docker environment, so ensure the daemon is running before proceeding.
+This repository is tested and recommended on Ubuntu 22.04 and macOS (15.6 or newer) with Python 3.12. Docker is required because the tests are ran in an isolated Docker environment, so ensure the daemon is running before proceeding.
 
 Create a Python 3.12 virtual environment and install the required packages:
 ```sh
