@@ -1,4 +1,4 @@
-# Automated Generation of Issue-Reproducing Tests by Combining LLMs and Search-Based Testing
+# Automated Generation of Issue-Reproducing Tests by Combining LLMs and Search-Based Testing (ASE '25, South Korea)
 
 This repository contains the code for the paper  
 [**Automated Generation of Issue-Reproducing Tests by Combining LLMs and Search-Based Testing**](https://arxiv.org/pdf/2509.01616)  
